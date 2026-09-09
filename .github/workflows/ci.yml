@@ -1,5 +1,6 @@
 name: ci
 on: [push, pull_request]
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -12,3 +13,17 @@ jobs:
       - run: ruff check app tests
       - run: pytest -q
       - run: python -m compileall -q app
+
+      - name: Docker Compose end-to-end smoke test
+        run: |
+          cp .env.example .env
+          docker compose up --build -d
+          python tests/smoke_docker.py
+
+      - name: Show Docker Compose logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down Docker Compose
+        if: always()
+        run: docker compose down -v

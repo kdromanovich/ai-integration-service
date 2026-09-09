@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ai-integration-service"
 version = "0.1.0"
-description = "FastAPI integration backend with Celery, Redis, PostgreSQL, idempotency and retries"
+description = "Production-oriented FastAPI integration reference backend with Celery, Redis and PostgreSQL"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.116,<1",

@@ -1,6 +1,9 @@
 import time
+
 from fastapi import HTTPException
 from redis import Redis
+from redis.exceptions import RedisError
+
 from app.config import get_settings
 
 settings = get_settings()
@@ -18,6 +21,6 @@ def rate_limit(identity: str) -> None:
             raise HTTPException(status_code=429, detail="Rate limit exceeded")
     except HTTPException:
         raise
-    except Exception:
+    except RedisError:
         # Fail open if Redis is unavailable; production systems may choose a stricter policy.
         return

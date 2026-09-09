@@ -1,6 +1,8 @@
 import json
 from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI, Header, HTTPException
+from redis.exceptions import RedisError
 from sqlalchemy import text
 
 from app.config import get_settings
@@ -30,7 +32,7 @@ def health():
     redis_ok = True
     try:
         redis_ok = bool(redis_client.ping())
-    except Exception:
+    except RedisError:
         redis_ok = False
     return {"status": "ok", "database": "ok", "redis": "ok" if redis_ok else "degraded"}
 
@@ -46,11 +48,21 @@ def create_job(
     idempotency_key: str = Header(alias="Idempotency-Key", min_length=8, max_length=120),
 ):
     rate_limit("api")
-    job, created = create_or_get_job(idempotency_key, payload.payload, str(payload.callback_url) if payload.callback_url else None)
+    job, created = create_or_get_job(
+        idempotency_key,
+        payload.payload,
+        str(payload.callback_url) if payload.callback_url else None,
+    )
     if created:
         process_job.delay(job.id)
     result = json.loads(job.response_json) if job.response_json else None
-    return JobResponse(id=job.id, status=job.status, idempotency_key=job.idempotency_key, result=result, error=job.error)
+    return JobResponse(
+        id=job.id,
+        status=job.status,
+        idempotency_key=job.idempotency_key,
+        result=result,
+        error=job.error,
+    )
 
 
 @app.get("/v1/jobs/{job_id}", response_model=JobResponse, dependencies=[Depends(require_api_key)])

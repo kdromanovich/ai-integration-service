@@ -1,8 +1,10 @@
 # AI Integration Service
 
+[![CI](https://github.com/kdromanovich/ai-integration-service/actions/workflows/ci.yml/badge.svg)](https://github.com/kdromanovich/ai-integration-service/actions/workflows/ci.yml)
+
 [Русская версия](README_RU.md)
 
-A production-style integration backend built with **Python, FastAPI, PostgreSQL, Redis and Celery**. It accepts jobs through an authenticated API, enforces idempotency, queues work, retries transient failures with exponential backoff and exposes job status for polling or callback-based integration.
+A production-oriented integration **reference backend** built with **Python, FastAPI, PostgreSQL, Redis and Celery**. It accepts jobs through an authenticated API, enforces idempotency, queues work, retries transient failures with exponential backoff and exposes job status for polling or callback-based integration.
 
 ## Architecture
 
@@ -31,6 +33,10 @@ flowchart LR
 - demo upstream endpoint so the stack works locally without an external service;
 - Docker Compose, tests, Ruff and GitHub Actions.
 
+## End-to-end verification
+
+GitHub Actions builds and starts the complete Docker Compose stack: **FastAPI + PostgreSQL + Redis + Celery worker**. The smoke test waits for the API, verifies authentication, creates a job, resubmits the same idempotency key, then polls until the real worker processes the job through Redis/Celery and persists the completed result in PostgreSQL.
+
 ## Quick start
 
 ```bash
@@ -56,9 +62,9 @@ Submitting the same idempotency key returns the same job instead of creating a d
 
 The service shows the point where workflow automation becomes backend engineering: durable state, queues, retries, idempotency, API contracts, worker processes and failure handling. An AI model or third-party API can be placed behind `UPSTREAM_API_URL` without changing the orchestration pattern.
 
-## Production notes
+## Scope and production hardening
 
-For an internet-facing deployment add Alembic migrations, distributed tracing, a callback domain allowlist, secrets management, TLS termination and stronger tenant-aware rate limiting.
+This is a portfolio reference implementation, not a claim of a live customer production deployment. For an internet-facing deployment add Alembic migrations, distributed tracing, a callback domain allowlist, secrets management, TLS termination and stronger tenant-aware rate limiting.
 
 ## License
 

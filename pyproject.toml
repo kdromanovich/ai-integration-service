@@ -28,5 +28,9 @@ include = ["app*"]
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.lint]
+# Keep CI focused on stable Python correctness checks instead of Ruff's evolving defaults.
+select = ["E4", "E7", "E9", "F"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
